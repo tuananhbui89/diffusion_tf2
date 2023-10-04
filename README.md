@@ -125,11 +125,7 @@ We use a simple linear scheduler for $\beta_t = \frac{\beta_T-\beta_0}{T} t + \b
 Because these parameters $\beta_t, \bar{\alpha}_t$ are constant regardless input $x_0$, therefore, can be pre-computed. 
 The posterior variance $\sigma_t$ is defined as 
 
-$$
-
-\sigma_t = \sqrt{\frac{\beta_t (1 - \bar{\alpha}_t)}{1 - \alpha_t}}
-
-$$
+$$\sigma_t = \sqrt{\frac{\beta_t (1 - \bar{\alpha}_t)}{1 - \alpha_t}}$$
 
 which can be pre-computed as well but will be used in the backward diffusion process.
 
@@ -442,9 +438,7 @@ model = SimpleUnet()
 
 The objective function for training diffusion model is actually quite simple as we minimize the $L_2$ distance between the predicted noise and the ground truth noise.
 
-$$
-L = \mathbb{E}_{x_0 \sim q(x_0), \epsilon \sim N(0,I)} \left[ \| \epsilon - \epsilon_\theta (x_t, t) \| \right]
-$$
+$$L = \mathbb{E}_{x_0 \sim q(x_0), \epsilon \sim N(0,I)} \left[ \| \epsilon - \epsilon_\theta (x_t, t) \| \right]$$
 
 where $\epsilon_\theta$ is the U-Net which predicts the noise at time step $t$ with input $x_t$
 
@@ -460,23 +454,13 @@ def get_loss(model, x_0, t):
 
 In the following, we implement the reverse diffusion process to sample new images from the trained model. The reverse diffusion process is defined as 
 
-<!-- $$ 
-x_{t-1} = \sqrt{\bar{\alpha}_{t-1}} x_t + \sqrt{1 - \bar{\alpha}_{t-1}} \epsilon
-$$ -->
-
-$$
-x_{t-1} = \frac{1}{\sqrt{\alpha_t}} \left( x_t - \frac{1 - \alpha_t}{\sqrt{1 - \bar{\alpha}_t}} \right) + \sigma_t \epsilon
-$$
+$$x_{t-1} = \frac{1}{\sqrt{\alpha_t}} \left( x_t - \frac{1 - \alpha_t}{\sqrt{1 - \bar{\alpha}_t}} \right) + \sigma_t \epsilon$$
 
 where $\alpha_t = 1 - \beta_t$ and $\bar{\alpha}_t = \prod_{s=0}^t (1 - \beta_s)$
 
 The posterior variance $\sigma_t$ is defined as 
 
-$$
-
-\sigma_t = \sqrt{\frac{\beta_t (1 - \bar{\alpha}_t)}{1 - \alpha_t}}
-
-$$
+$$\sigma_t = \sqrt{\frac{\beta_t (1 - \bar{\alpha}_t)}{1 - \alpha_t}}$$
 
 which has been pre-computed in the forward diffusion process
 
