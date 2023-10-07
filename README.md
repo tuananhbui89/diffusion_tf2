@@ -373,9 +373,7 @@ model = SimpleUnet()
 
 The objective function for training diffusion model is actually quite simple as we minimize the $L_2$ distance between the predicted noise and the ground truth noise.
 
-$$
-L = \mathbb{E}_{x_0 \sim q(x_0), \epsilon \sim N(0,I)} \left[ \| \epsilon - \epsilon_\theta (x_t, t) \| \right]
-$$
+$$L = \mathbb{E}_{x_0 \sim q(x_0), \epsilon \sim N(0,I)} \left[ \| \epsilon - \epsilon_\theta (x_t, t) \| \right]$$
 
 where $\epsilon_\theta$ is the U-Net which predicts the noise at time step $t$ with input $x_t$
 
