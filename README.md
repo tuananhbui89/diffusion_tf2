@@ -59,7 +59,7 @@ plt.show()
 
 
 
-    Shuffling cifar10/3.0.2.incomplete8GWU98/cifar10-train.tfrecord*...:   0%|          | 0/50000 [00:00<?, ? exam…
+    Shuffling cifar10/3.0.2.incompleteT4PJID/cifar10-train.tfrecord*...:   0%|          | 0/50000 [00:00<?, ? exam…
 
 
 
@@ -67,7 +67,7 @@ plt.show()
 
 
 
-    Shuffling cifar10/3.0.2.incomplete8GWU98/cifar10-test.tfrecord*...:   0%|          | 0/10000 [00:00<?, ? examp…
+    Shuffling cifar10/3.0.2.incompleteT4PJID/cifar10-test.tfrecord*...:   0%|          | 0/10000 [00:00<?, ? examp…
 
 
     Dataset cifar10 downloaded and prepared to ./cifar10/3.0.2. Subsequent calls will reuse this data.
@@ -124,14 +124,10 @@ $$x_t = \sqrt{\bar{\alpha}_t} x_0 + \sqrt{1 - \bar{\alpha}_t} \epsilon $$
 where $\bar{\alpha}_t = ∏_{s=0}^t (1 - \beta_t)$.
 We use a simple linear scheduler for $\beta_t = \frac{\beta_T-\beta_0}{T} t + \beta_0$
 
-Because these parameters $\beta_t, \bar{\alpha}_t$ are constant regardless input $x_0$, therefore, can be pre-computed. 
-The posterior variance $\sigma_t$ is defined as 
+Because these parameters $\beta_t, \bar{\alpha}_t$ are constant regardless input $x_0$, therefore, can be pre-computed.
+The posterior variance $\sigma_t$ is defined as
 
-$$
-
-\sigma_t = \sqrt{\frac{\beta_t (1 - \bar{\alpha}_t)}{1 - \alpha_t}}
-
-$$
+$$\sigma_t = \sqrt{\frac{\beta_t (1 - \bar{\alpha}_t)}{1 - \alpha_t}}$$
 
 which can be pre-computed as well but will be used in the backward diffusion process.
 
@@ -182,20 +178,24 @@ posterior_variance = betas * (1. - alphas_cumprod_prev) / (1. - alphas_cumprod)
 
 
 ```python
-def show_tensor_image(image):
+def convert_tensor_image(image):
     # Reverse transformation
     image = (image + 1.0) / 2.0  # Scale to [0, 1]
 
     if image.shape.ndims == 4:
         image = image[0]  # Take the first image in the batch
 
-    plt.imshow(image.numpy())
-    plt.axis('off')
-    plt.show()
+    return image.numpy()
 ```
 
-Showing the forward diffusion process. 
+Showing the forward diffusion process.
 The first row is the original image, and the second row is the denoised image at different time steps. You can see that the image becomes more and more noisy as the time step increases.
+
+
+```python
+import warnings
+warnings.filterwarnings('ignore')
+```
 
 
 ```python
@@ -209,20 +209,23 @@ image = next(iter(data))[0].numpy()
 print(np.shape(image))
 
 image = image[0]
-
-plt.figure(figsize=(15, 15))
-plt.axis('off')
 num_images = 10
+
+
 stepsize = int(T / num_images)
+
+new_images = []
 
 for idx in range(0, T, stepsize):
     t = tf.constant([idx], dtype=tf.int64)
-    # plt.subplot(1, num_images + 1, (idx // stepsize) + 1)
-    plt.subplot(num_images + 1, 1, (idx // stepsize) + 1)
     image, noise = forward_diffusion_sample(image, t)
-    show_tensor_image(image)
+    image_np = convert_tensor_image(image)
+    new_images.append(image_np)
 
-plt.show()
+new_images = np.concatenate(new_images, axis=1)
+plt.figure(figsize=(20, 20))
+plt.imshow(new_images)
+plt.axis('off')
 ```
 
     WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
@@ -232,89 +235,15 @@ plt.show()
 
 
 
-    
-![png](diffusion_models_tf2_files/diffusion_models_tf2_9_2.png)
-    
 
 
-    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+    (-0.5, 279.5, 27.5, -0.5)
+
 
 
 
     
-![png](diffusion_models_tf2_files/diffusion_models_tf2_9_4.png)
-    
-
-
-    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
-
-
-
-    
-![png](diffusion_models_tf2_files/diffusion_models_tf2_9_6.png)
-    
-
-
-    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
-
-
-
-    
-![png](diffusion_models_tf2_files/diffusion_models_tf2_9_8.png)
-    
-
-
-    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
-
-
-
-    
-![png](diffusion_models_tf2_files/diffusion_models_tf2_9_10.png)
-    
-
-
-    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
-
-
-
-    
-![png](diffusion_models_tf2_files/diffusion_models_tf2_9_12.png)
-    
-
-
-    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
-
-
-
-    
-![png](diffusion_models_tf2_files/diffusion_models_tf2_9_14.png)
-    
-
-
-    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
-
-
-
-    
-![png](diffusion_models_tf2_files/diffusion_models_tf2_9_16.png)
-    
-
-
-    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
-
-
-
-    
-![png](diffusion_models_tf2_files/diffusion_models_tf2_9_18.png)
-    
-
-
-    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
-
-
-
-    
-![png](diffusion_models_tf2_files/diffusion_models_tf2_9_20.png)
+![png](diffusion_models_tf2_files/diffusion_models_tf2_10_3.png)
     
 
 
@@ -460,25 +389,19 @@ def get_loss(model, x_0, t):
 
 # Sample new images with Diffusion model
 
-In the following, we implement the reverse diffusion process to sample new images from the trained model. The reverse diffusion process is defined as 
+In the following, we implement the reverse diffusion process to sample new images from the trained model. The reverse diffusion process is defined as
 
-<!-- $$ 
+<!-- $$
 x_{t-1} = \sqrt{\bar{\alpha}_{t-1}} x_t + \sqrt{1 - \bar{\alpha}_{t-1}} \epsilon
 $$ -->
 
-$$
-x_{t-1} = \frac{1}{\sqrt{\alpha_t}} \left( x_t - \frac{1 - \alpha_t}{\sqrt{1 - \bar{\alpha}_t}} \right) + \sigma_t \epsilon
-$$
+$$x_{t-1} = \frac{1}{\sqrt{\alpha_t}} \left( x_t - \frac{1 - \alpha_t}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_\theta(x_t, t) \right) + \sigma_t \epsilon$$
 
 where $\alpha_t = 1 - \beta_t$ and $\bar{\alpha}_t = \prod_{s=0}^t (1 - \beta_s)$
 
-The posterior variance $\sigma_t$ is defined as 
+The posterior variance $\sigma_t$ is defined as
 
-$$
-
-\sigma_t = \sqrt{\frac{\beta_t (1 - \bar{\alpha}_t)}{1 - \alpha_t}}
-
-$$
+$$\sigma_t = \sqrt{\frac{\beta_t (1 - \bar{\alpha}_t)}{1 - \alpha_t}}$$
 
 which has been pre-computed in the forward diffusion process
 
@@ -513,17 +436,39 @@ def sample_plot_image(model, betas, sqrt_one_minus_alphas_cumprod, sqrt_recip_al
     # Sample noise
     img_size = IMG_SIZE
     img = tf.random.normal((1, img_size, img_size, 3), dtype=tf.float32)
-    plt.figure(figsize=(15, 15))
-    plt.axis('off')
+
     num_images = 10
     stepsize = int(T / num_images)
 
+    new_images = []
     for i in range(T - 1, -1, -1):
         t = tf.constant([i], dtype=tf.int64)
         img = sample_timestep(img, t, model, betas, sqrt_one_minus_alphas_cumprod, sqrt_recip_alphas, posterior_variance)
         if i % stepsize == 0:
-            plt.subplot(1, num_images, i // stepsize + 1)
-            show_tensor_image(img)
+            img_np = convert_tensor_image(img)
+            new_images.append(img_np)
+    new_images = np.concatenate(new_images, axis=1)
+    plt.figure(figsize=(20, 20))
+    plt.imshow(new_images)
+    plt.axis('off')
+    plt.show()
+
+def sample_plot_batch(model, betas, sqrt_one_minus_alphas_cumprod, sqrt_recip_alphas, posterior_variance, device, IMG_SIZE, T):
+    # Sample noise
+    batch_size = 10
+    img_size = IMG_SIZE
+    img = tf.random.normal((batch_size, img_size, img_size, 3), dtype=tf.float32)
+
+    for i in range(T - 1, -1, -1):
+        t = tf.constant([i], dtype=tf.int64)
+        img = sample_timestep(img, t, model, betas, sqrt_one_minus_alphas_cumprod, sqrt_recip_alphas, posterior_variance)
+
+    batch_images = img.numpy()
+    batch_images = (batch_images + 1) / 2
+    batch_images = np.reshape(batch_images, [img_size, img_size * batch_size, 3])
+    plt.figure(figsize=(20, 20))
+    plt.imshow(new_images)
+    plt.axis('off')
     plt.show()
 
 ```
@@ -531,6 +476,12 @@ def sample_plot_image(model, betas, sqrt_one_minus_alphas_cumprod, sqrt_recip_al
 # Combine all together: Training and Sampling
 
 In the following code, we combine all the above components together to train the diffusion model and sample new images along the training process. Note that, the training takes a long time to converge and start to generate good samples.
+
+
+```python
+import warnings
+warnings.filterwarnings( "ignore", module = "matplotlib\..*" )
+```
 
 
 ```python
@@ -566,9 +517,11 @@ for epoch in range(epochs):
             # Sample and plot an image
             sample_plot_image(model, betas, sqrt_one_minus_alphas_cumprod, sqrt_recip_alphas, posterior_variance, device, IMG_SIZE, T)
 
+# Generate a batch of images at the end
+sample_plot_batch(model, betas, sqrt_one_minus_alphas_cumprod, sqrt_recip_alphas, posterior_variance, device, IMG_SIZE, T)
 ```
 
-    Epoch 0 | Step 000 Loss: 0.8280490636825562
+    Epoch 0 | Step 000 Loss: 0.806877076625824
 
 
     WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
@@ -576,8 +529,11 @@ for epoch in range(epochs):
 
 
     
-![png](diffusion_models_tf2_files/diffusion_models_tf2_17_2.png)
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_2.png)
     
+
+
+    Epoch 5 | Step 000 Loss: 0.21929287910461426
 
 
     WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
@@ -585,8 +541,11 @@ for epoch in range(epochs):
 
 
     
-![png](diffusion_models_tf2_files/diffusion_models_tf2_17_4.png)
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_5.png)
     
+
+
+    Epoch 10 | Step 000 Loss: 0.18964025378227234
 
 
     WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
@@ -594,8 +553,11 @@ for epoch in range(epochs):
 
 
     
-![png](diffusion_models_tf2_files/diffusion_models_tf2_17_6.png)
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_8.png)
     
+
+
+    Epoch 15 | Step 000 Loss: 0.18313837051391602
 
 
     WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
@@ -603,8 +565,11 @@ for epoch in range(epochs):
 
 
     
-![png](diffusion_models_tf2_files/diffusion_models_tf2_17_8.png)
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_11.png)
     
+
+
+    Epoch 20 | Step 000 Loss: 0.19203712046146393
 
 
     WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
@@ -612,8 +577,11 @@ for epoch in range(epochs):
 
 
     
-![png](diffusion_models_tf2_files/diffusion_models_tf2_17_10.png)
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_14.png)
     
+
+
+    Epoch 25 | Step 000 Loss: 0.17337192595005035
 
 
     WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
@@ -621,8 +589,11 @@ for epoch in range(epochs):
 
 
     
-![png](diffusion_models_tf2_files/diffusion_models_tf2_17_12.png)
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_17.png)
     
+
+
+    Epoch 30 | Step 000 Loss: 0.1791364699602127
 
 
     WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
@@ -630,8 +601,11 @@ for epoch in range(epochs):
 
 
     
-![png](diffusion_models_tf2_files/diffusion_models_tf2_17_14.png)
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_20.png)
     
+
+
+    Epoch 35 | Step 000 Loss: 0.1715242862701416
 
 
     WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
@@ -639,8 +613,11 @@ for epoch in range(epochs):
 
 
     
-![png](diffusion_models_tf2_files/diffusion_models_tf2_17_16.png)
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_23.png)
     
+
+
+    Epoch 40 | Step 000 Loss: 0.1820080429315567
 
 
     WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
@@ -648,8 +625,11 @@ for epoch in range(epochs):
 
 
     
-![png](diffusion_models_tf2_files/diffusion_models_tf2_17_18.png)
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_26.png)
     
+
+
+    Epoch 45 | Step 000 Loss: 0.16992542147636414
 
 
     WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
@@ -657,7 +637,127 @@ for epoch in range(epochs):
 
 
     
-![png](diffusion_models_tf2_files/diffusion_models_tf2_17_20.png)
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_29.png)
+    
+
+
+    Epoch 50 | Step 000 Loss: 0.17644020915031433
+
+
+    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+
+
+
+    
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_32.png)
+    
+
+
+    Epoch 55 | Step 000 Loss: 0.16511115431785583
+
+
+    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+
+
+
+    
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_35.png)
+    
+
+
+    Epoch 60 | Step 000 Loss: 0.1632281243801117
+
+
+    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+
+
+
+    
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_38.png)
+    
+
+
+    Epoch 65 | Step 000 Loss: 0.16946107149124146
+
+
+    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+
+
+
+    
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_41.png)
+    
+
+
+    Epoch 70 | Step 000 Loss: 0.17314471304416656
+
+
+    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+
+
+
+    
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_44.png)
+    
+
+
+    Epoch 75 | Step 000 Loss: 0.16922444105148315
+
+
+    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+
+
+
+    
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_47.png)
+    
+
+
+    Epoch 80 | Step 000 Loss: 0.1614874303340912
+
+
+    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+
+
+
+    
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_50.png)
+    
+
+
+    Epoch 85 | Step 000 Loss: 0.1648266315460205
+
+
+    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+
+
+
+    
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_53.png)
+    
+
+
+    Epoch 90 | Step 000 Loss: 0.16022856533527374
+
+
+    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+
+
+
+    
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_56.png)
+    
+
+
+    Epoch 95 | Step 000 Loss: 0.17524562776088715
+
+
+    WARNING:matplotlib.image:Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+
+
+
+    
+![png](diffusion_models_tf2_files/diffusion_models_tf2_19_59.png)
     
 
 
